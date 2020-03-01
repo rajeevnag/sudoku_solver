@@ -1,4 +1,3 @@
-
 def getBoard(temp):
     returnBoard = list()
     for line in temp:
@@ -8,7 +7,8 @@ def getBoard(temp):
                 currLine.append(int(c))
         returnBoard.append(currLine)
     return returnBoard
-def printStart(board):
+
+def printBoard(board):
     print("Sudoku board:")
     for line in board:
         temp = str()
@@ -16,90 +16,98 @@ def printStart(board):
             temp += str(num)
             temp += ' '
         print(temp)
-def printResult(board):
-    for line in board:
-        temp = str()
-        for num in line:
-            temp += str(num)
-        print(temp)
-        print('\n')
+        
 def checkRow(board,row,num):
     tempSet = set()
     tempSet.add(num)
     for currNum in board[row]:
         if currNum in tempSet:
             return False
-        tempSet.add(currNum)
-
+        if currNum != 0:
+            tempSet.add(currNum)
     return True
+
 def checkColumn(board,column,num):
     tempSet = set()
     tempSet.add(num)
     for i in range(0,9):
         if board[i][column] in tempSet:
             return False
-        tempSet.add(board[i][column])
+        if board[i][column] != 0:
+            tempSet.add(board[i][column])
     return True
 
 def checkSquares(board,row,column,num):
-    #get specific square 
-    #square rule: top left is square 0
-    #count moving horizontally so top right square is square 2
-    #bottom left square is square 6
-    #bottom right square is 8
-    square = int()
-    if row >=0 and row < 3:
-        if column >= 0 and column < 3:
-            square = 0
-        elif column >= 3 and column <6:
-            square = 1
-        else:
-            square = 2
-    if row >=3 and row < 6:
-        if column >= 0 and column < 3:
-            square = 3
-        elif column >= 3 and column <6:
-            square = 3
-        else:
-            square = 5
-    else:
-        if column >= 0 and column < 3:
-            square = 6
-        elif column >= 3 and column <6:
-            square = 7
-        else:
-            square = 8
-    if(square == 0):    #top left 
-        tempSet = set()
-        for i in range(0,3):
-            for j in range(0,3):
-                if board[i][j] in tempSet:
-                    return False
-                tempSet.add(board[i][j])
 
+    #lowerbound = (row or column / 3) and then multiply by 3
+    tempRow = int(row // 3)
+    tempCol = int(column // 3)
+
+    
+    lowerBoundRow = tempRow * 3
+    upperBoundRow = lowerBoundRow + 3
+    
+    
+    lowerBoundCol = tempCol * 3
+    upperBoundCol = lowerBoundCol + 3
+
+    #add the number you want to add first so that if you come across it in the nearby squares that means it's already there and you can't add it
+    tempSet = set()
+    tempSet.add(num)
+    
+    for i in range(lowerBoundRow,upperBoundRow):
+        for j in range(lowerBoundCol,upperBoundCol):
+            if board[i][j] in tempSet:
+                return False
+            if board[i][j] != 0:
+                tempSet.add(board[i][j])
+            
+
+    return True
 
 
 def promising(board,row,column,num):
+    rowResult = checkRow(board,row,num)
+    colResult = checkColumn(board,column,num)
+    squareResult = checkSquares(board,row,column,num)
+ 
     return checkRow(board,row,num) and checkColumn(board,column,num) and checkSquares(board,row,column,num)
+    
 
 def solve(board,index):
 
-    row = index / len(board)
-    column = index % len(board)
-
-    if(row == 8 and column == 8):
-        print('Solved')
-        printResult(board)
+    row = int(index // len(board))
+    column = int(index % len(board))
+    if row > 8 or column > 8:
+        print('wrong')
+        printBoard(board)
+        print(row)
+        print(column)
+        print(index)
+        return True
+    
     #increment index
     index += 1
+
 
     if board[row][column] != 0: #if number doesn't need to be changed
         return solve(board,index)
     else:   #if number needs to be changed
+        
         for i in range(1,10):
+            
             if promising(board,row,column,i):
                 board[row][column] = i    
-                solve(board,index)
+                worked = solve(board,index)
+                if(worked != True):
+                    board[row][column] = 0
+                else:
+                    return True
+        
+            
+                
+            
+                
             
             
     
@@ -122,7 +130,12 @@ with open(fileName,'r') as f:
 board = getBoard(temp)
 
 #print starting configuration:
-printStart(board)
+printBoard(board)
     
+
 #solve board
 solve(board,0)
+
+#output result
+print('result')
+printBoard(board)
