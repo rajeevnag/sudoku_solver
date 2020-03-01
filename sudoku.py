@@ -9,7 +9,6 @@ def getBoard(temp):
     return returnBoard
 
 def printBoard(board):
-    print("Sudoku board:")
     for line in board:
         temp = str()
         for num in line:
@@ -67,23 +66,13 @@ def checkSquares(board,row,column,num):
 
 
 def promising(board,row,column,num):
-    rowResult = checkRow(board,row,num)
-    colResult = checkColumn(board,column,num)
-    squareResult = checkSquares(board,row,column,num)
- 
     return checkRow(board,row,num) and checkColumn(board,column,num) and checkSquares(board,row,column,num)
-    
 
 def solve(board,index):
 
     row = int(index // len(board))
     column = int(index % len(board))
     if row > 8 or column > 8:
-        print('wrong')
-        printBoard(board)
-        print(row)
-        print(column)
-        print(index)
         return True
     
     #increment index
@@ -99,21 +88,11 @@ def solve(board,index):
             if promising(board,row,column,i):
                 board[row][column] = i    
                 worked = solve(board,index)
-                if(worked != True):
-                    board[row][column] = 0
-                else:
+                if(worked):
                     return True
+                else:
+                    board[row][column] = 0
         
-            
-                
-            
-                
-            
-            
-    
-
-
-
 
 print('Enter filename for sudoku board: ')
 
@@ -130,6 +109,7 @@ with open(fileName,'r') as f:
 board = getBoard(temp)
 
 #print starting configuration:
+print('Start')
 printBoard(board)
     
 
@@ -137,5 +117,5 @@ printBoard(board)
 solve(board,0)
 
 #output result
-print('result')
+print('result:')
 printBoard(board)
